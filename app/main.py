@@ -9,7 +9,10 @@ app = Flask(__name__)
 # Manejo de SIGTERM (graceful shutdown)
 def handle_sigterm(*args):
     print("SIGTERM recibido, apagando servidor...")
-    sys.exit(0
+    sys.exit(0)
+
+
+
 
 signal.signal(signal.SIGTERM, handle_sigterm)
 
