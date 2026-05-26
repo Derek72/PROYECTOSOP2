@@ -11,9 +11,6 @@ def handle_sigterm(*args):
     print("SIGTERM recibido, apagando servidor...")
     sys.exit(0)
 
-
-
-
 signal.signal(signal.SIGTERM, handle_sigterm)
 
 # Conexión a PostgreSQL
