@@ -1,0 +1,45 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout codigo
+      uses: actions/checkout@v3
+
+    - name: Autenticar en Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+    - name: Configurar gcloud
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Configurar Docker para Artifact Registry
+      run: gcloud auth configure-docker us-central1-docker.pkg.dev
+
+    - name: Construir imagen Docker
+      run: |
+        docker build -t us-central1-docker.pkg.dev/proyecto-sop2/proyecto-repo/api:latest ./app
+
+    - name: Subir imagen a Artifact Registry
+      run: |
+        docker push us-central1-docker.pkg.dev/proyecto-sop2/proyecto-repo/api:latest
+
+    - name: Conectar al cluster GKE
+      uses: google-github-actions/get-gke-credentials@v2
+      with:
+        cluster_name: cluster-sop2
+        location: us-central1
+
+    - name: Desplegar en GKE
+      run: |
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl rollout restart deployment/api-deployment
