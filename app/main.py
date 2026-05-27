@@ -13,14 +13,42 @@ def handle_sigterm(*args):
 
 signal.signal(signal.SIGTERM, handle_sigterm)
 
-# Conexión a PostgreSQL
 def get_db():
     return psycopg2.connect(
-        host=os.environ.get("DB_HOST", "localhost"),
+        host=os.environ.get("DB_HOST", "postgres-service"),
         database=os.environ.get("DB_NAME", "appdb"),
         user=os.environ.get("DB_USER", "postgres"),
-        password=os.environ.get("DB_PASSWORD", "password")
+        password=os.environ.get("DB_PASSWORD", "password123")
     )
+
+def init_db():
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS tasks (
+                id SERIAL PRIMARY KEY,
+                description TEXT NOT NULL,
+                completed BOOLEAN DEFAULT FALSE
+            );
+        """)
+        cur.execute("SELECT COUNT(*) FROM tasks;")
+        count = cur.fetchone()[0]
+        if count == 0:
+            cur.execute("""
+                INSERT INTO tasks (description, completed) VALUES
+                ('Configurar Docker con multi-stage build', TRUE),
+                ('Desplegar cluster en GKE', TRUE),
+                ('Configurar HPA y autoscaling', TRUE),
+                ('Configurar IP estatica en GCP', TRUE),
+                ('Implementar CI/CD con GitHub Actions', TRUE),
+                ('Configurar Google Cloud Monitoring', TRUE);
+            """)
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error inicializando DB: {e}")
 
 HTML = """
 <!DOCTYPE html>
@@ -44,32 +72,36 @@ HTML = """
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 4px; }
         .green { background: #064e3b; color: #34d399; }
         .blue { background: #1e3a5f; color: #60a5fa; }
-        .endpoint { background: #0f172a; border-radius: 6px; padding: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; }
-        .method { background: #1d4ed8; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+        .task { background: #0f172a; border-radius: 6px; padding: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; }
+        .done { color: #34d399; font-size: 20px; }
+        .pending { color: #f59e0b; font-size: 20px; }
         footer { text-align: center; padding: 20px; color: #475569; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #0f172a; padding: 10px; text-align: left; color: #3b82f6; }
+        td { padding: 10px; border-bottom: 1px solid #334155; }
     </style>
 </head>
 <body>
     <header>
         <h1>🚀 Proyecto Final - Sistemas Operativos 2</h1>
-        <p>Universidad Mariano Gálvez de Guatemala &nbsp;|&nbsp; Aplicación desplegada en Google Kubernetes Engine</p>
+        <p>Universidad Mariano Gálvez de Guatemala &nbsp;|&nbsp; Desplegado en Google Kubernetes Engine</p>
     </header>
     <div class="container">
         <div class="cards">
             <div class="card">
-                <h3>Estado del Sistema</h3>
+                <h3>Estado</h3>
                 <p>✅ Online</p>
-                <div class="sub">API funcionando correctamente</div>
+                <div class="sub">API + PostgreSQL activos</div>
             </div>
             <div class="card">
                 <h3>Plataforma</h3>
                 <p>GKE</p>
-                <div class="sub">Google Kubernetes Engine</div>
+                <div class="sub">cluster-sop2 | us-central1</div>
             </div>
             <div class="card">
                 <h3>Réplicas</h3>
                 <p>2 Pods</p>
-                <div class="sub">Con HPA habilitado</div>
+                <div class="sub">HPA habilitado</div>
             </div>
         </div>
 
@@ -77,80 +109,110 @@ HTML = """
             <h2>🏗️ Stack Tecnológico</h2>
             <span class="badge green">Python Flask</span>
             <span class="badge green">PostgreSQL</span>
-            <span class="badge blue">Docker</span>
+            <span class="badge blue">Docker Multi-stage</span>
             <span class="badge blue">Kubernetes</span>
             <span class="badge blue">Google Cloud</span>
-            <span class="badge blue">GitHub Actions</span>
+            <span class="badge blue">GitHub Actions CI/CD</span>
         </div>
 
         <div class="section">
-            <h2>🔌 Endpoints Disponibles</h2>
-            <div class="endpoint">
-                <span class="method">GET</span>
-                <span>/</span>
-                <span style="color:#94a3b8; margin-left:auto">Página principal</span>
-            </div>
-            <div class="endpoint">
-                <span class="method">GET</span>
-                <span>/health</span>
-                <span style="color:#94a3b8; margin-left:auto">Health check del sistema</span>
-            </div>
-            <div class="endpoint">
-                <span class="method">GET</span>
-                <span>/usuarios</span>
-                <span style="color:#94a3b8; margin-left:auto">Lista de usuarios en PostgreSQL</span>
-            </div>
+            <h2>📋 Tareas del Proyecto (desde PostgreSQL)</h2>
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                </tr>
+                {% for task in tasks %}
+                <tr>
+                    <td>{{ task[0] }}</td>
+                    <td>{{ task[1] }}</td>
+                    <td>
+                        {% if task[2] %}
+                            <span class="badge green">✅ Completado</span>
+                        {% else %}
+                            <span class="badge" style="background:#7c2d12;color:#fb923c">⏳ Pendiente</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
         </div>
 
         <div class="section">
-            <h2>📦 Infraestructura</h2>
-            <div class="endpoint">
-                <span>🔵</span>
-                <span>Clúster GKE: <strong>cluster-sop2</strong></span>
+            <h2>📦 Infraestructura GCP</h2>
+            <div class="task">
+                <span>🔵</span><span>Clúster GKE: <strong>cluster-sop2</strong></span>
                 <span class="badge green" style="margin-left:auto">Running</span>
             </div>
-            <div class="endpoint">
-                <span>🔵</span>
-                <span>IP Estática: <strong>136.111.214.27</strong></span>
+            <div class="task">
+                <span>🔵</span><span>IP Estática: <strong>136.111.214.27</strong></span>
                 <span class="badge green" style="margin-left:auto">Asignada</span>
             </div>
-            <div class="endpoint">
-                <span>🔵</span>
-                <span>Artifact Registry: <strong>proyecto-repo</strong></span>
+            <div class="task">
+                <span>🔵</span><span>Artifact Registry: <strong>proyecto-repo</strong></span>
                 <span class="badge green" style="margin-left:auto">Activo</span>
             </div>
-            <div class="endpoint">
-                <span>🔵</span>
-                <span>CI/CD: <strong>GitHub Actions</strong></span>
+            <div class="task">
+                <span>🔵</span><span>CI/CD: <strong>GitHub Actions</strong></span>
                 <span class="badge green" style="margin-left:auto">Configurado</span>
             </div>
         </div>
     </div>
-    <footer>Proyecto Final SOP2 &nbsp;|&nbsp; Derek Ruiz &nbsp;|&nbsp; Universidad Mariano Gálvez 2026</footer>
+    <footer>Proyecto Final SOP2 &nbsp;|&nbsp; Universidad Mariano Gálvez 2026</footer>
 </body>
 </html>
 """
 
 @app.route("/")
 def index():
-    return render_template_string(HTML)
+    tasks = []
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("SELECT id, description, completed FROM tasks ORDER BY id;")
+        tasks = cur.fetchall()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error: {e}")
+    return render_template_string(HTML, tasks=tasks)
 
 @app.route("/health")
 def health():
     return jsonify({"status": "healthy"}), 200
 
-@app.route("/usuarios")
-def usuarios():
+@app.route("/api/tasks")
+def get_tasks():
     try:
         conn = get_db()
         cur = conn.cursor()
-        cur.execute("SELECT id, nombre FROM usuarios;")
+        cur.execute("SELECT id, description, completed FROM tasks ORDER BY id;")
         rows = cur.fetchall()
         cur.close()
         conn.close()
-        return jsonify({"usuarios": rows})
+        return jsonify([{"id": r[0], "description": r[1], "completed": r[2]} for r in rows])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/tasks", methods=["POST"])
+def create_task():
+    from flask import request
+    data = request.get_json()
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("INSERT INTO tasks (description) VALUES (%s) RETURNING id;", (data["description"],))
+        new_id = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"id": new_id, "description": data["description"], "completed": False}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+with app.app_context():
+    init_db()
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
