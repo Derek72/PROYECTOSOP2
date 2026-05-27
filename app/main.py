@@ -2,11 +2,10 @@ import signal
 import sys
 import os
 import psycopg2
-from flask import Flask, jsonify, render_template_string
+from flask import Flask, jsonify, render_template_string, request
 
 app = Flask(__name__)
 
-# Manejo de SIGTERM (graceful shutdown)
 def handle_sigterm(*args):
     print("SIGTERM recibido, apagando servidor...")
     sys.exit(0)
@@ -72,13 +71,17 @@ HTML = """
         .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 4px; }
         .green { background: #064e3b; color: #34d399; }
         .blue { background: #1e3a5f; color: #60a5fa; }
-        .task { background: #0f172a; border-radius: 6px; padding: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; }
-        .done { color: #34d399; font-size: 20px; }
-        .pending { color: #f59e0b; font-size: 20px; }
-        footer { text-align: center; padding: 20px; color: #475569; font-size: 12px; }
+        .task-row { background: #0f172a; border-radius: 6px; padding: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; }
         table { width: 100%; border-collapse: collapse; }
         th { background: #0f172a; padding: 10px; text-align: left; color: #3b82f6; }
         td { padding: 10px; border-bottom: 1px solid #334155; }
+        .form-row { display: flex; gap: 10px; margin-bottom: 16px; }
+        .form-row input { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 14px; }
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-add { background: #3b82f6; color: white; }
+        .btn-done { background: #064e3b; color: #34d399; padding: 4px 10px; font-size: 12px; }
+        .btn-delete { background: #7f1d1d; color: #fca5a5; padding: 4px 10px; font-size: 12px; }
+        footer { text-align: center; padding: 20px; color: #475569; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -106,83 +109,101 @@ HTML = """
         </div>
 
         <div class="section">
-            <h2>🏗️ Stack Tecnológico</h2>
-            <span class="badge green">Python Flask</span>
-            <span class="badge green">PostgreSQL</span>
-            <span class="badge blue">Docker Multi-stage</span>
-            <span class="badge blue">Kubernetes</span>
-            <span class="badge blue">Google Cloud</span>
-            <span class="badge blue">GitHub Actions CI/CD</span>
-        </div>
-
-        <div class="section">
-            <h2>📋 Tareas del Proyecto (desde PostgreSQL)</h2>
+            <h2>📋 Gestión de Tareas (PostgreSQL)</h2>
+            <div class="form-row">
+                <input type="text" id="newTask" placeholder="Escribe una nueva tarea..." />
+                <button class="btn btn-add" onclick="addTask()">+ Agregar</button>
+            </div>
             <table>
                 <tr>
                     <th>ID</th>
                     <th>Descripción</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
-                {% for task in tasks %}
-                <tr>
-                    <td>{{ task[0] }}</td>
-                    <td>{{ task[1] }}</td>
-                    <td>
-                        {% if task[2] %}
-                            <span class="badge green">✅ Completado</span>
-                        {% else %}
-                            <span class="badge" style="background:#7c2d12;color:#fb923c">⏳ Pendiente</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
+                <tbody id="taskList"></tbody>
             </table>
         </div>
 
         <div class="section">
             <h2>📦 Infraestructura GCP</h2>
-            <div class="task">
+            <div class="task-row">
                 <span>🔵</span><span>Clúster GKE: <strong>cluster-sop2</strong></span>
                 <span class="badge green" style="margin-left:auto">Running</span>
             </div>
-            <div class="task">
+            <div class="task-row">
                 <span>🔵</span><span>IP Estática: <strong>136.111.214.27</strong></span>
                 <span class="badge green" style="margin-left:auto">Asignada</span>
             </div>
-            <div class="task">
+            <div class="task-row">
                 <span>🔵</span><span>Artifact Registry: <strong>proyecto-repo</strong></span>
                 <span class="badge green" style="margin-left:auto">Activo</span>
             </div>
-            <div class="task">
+            <div class="task-row">
                 <span>🔵</span><span>CI/CD: <strong>GitHub Actions</strong></span>
                 <span class="badge green" style="margin-left:auto">Configurado</span>
             </div>
         </div>
     </div>
     <footer>Proyecto Final SOP2 &nbsp;|&nbsp; Universidad Mariano Gálvez 2026</footer>
+
+    <script>
+        async function loadTasks() {
+            const res = await fetch('/api/tasks');
+            const tasks = await res.json();
+            const tbody = document.getElementById('taskList');
+            tbody.innerHTML = '';
+            tasks.forEach(t => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${t.id}</td>
+                        <td>${t.description}</td>
+                        <td>${t.completed ? '<span class="badge green">✅ Completado</span>' : '<span class="badge" style="background:#7c2d12;color:#fb923c">⏳ Pendiente</span>'}</td>
+                        <td>
+                            ${!t.completed ? `<button class="btn btn-done" onclick="completeTask(${t.id})">✔ Completar</button>` : ''}
+                            <button class="btn btn-delete" onclick="deleteTask(${t.id})">🗑 Eliminar</button>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        async function addTask() {
+            const input = document.getElementById('newTask');
+            if (!input.value.trim()) return;
+            await fetch('/api/tasks', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({description: input.value})
+            });
+            input.value = '';
+            loadTasks();
+        }
+
+        async function completeTask(id) {
+            await fetch('/api/tasks/' + id, {method: 'PUT'});
+            loadTasks();
+        }
+
+        async function deleteTask(id) {
+            await fetch('/api/tasks/' + id, {method: 'DELETE'});
+            loadTasks();
+        }
+
+        loadTasks();
+    </script>
 </body>
 </html>
 """
 
 @app.route("/")
 def index():
-    tasks = []
-    try:
-        conn = get_db()
-        cur = conn.cursor()
-        cur.execute("SELECT id, description, completed FROM tasks ORDER BY id;")
-        tasks = cur.fetchall()
-        cur.close()
-        conn.close()
-    except Exception as e:
-        print(f"Error: {e}")
-    return render_template_string(HTML, tasks=tasks)
+    return render_template_string(HTML)
 
 @app.route("/health")
 def health():
     return jsonify({"status": "healthy"}), 200
 
-@app.route("/api/tasks")
+@app.route("/api/tasks", methods=["GET"])
 def get_tasks():
     try:
         conn = get_db()
@@ -197,7 +218,6 @@ def get_tasks():
 
 @app.route("/api/tasks", methods=["POST"])
 def create_task():
-    from flask import request
     data = request.get_json()
     try:
         conn = get_db()
@@ -208,6 +228,32 @@ def create_task():
         cur.close()
         conn.close()
         return jsonify({"id": new_id, "description": data["description"], "completed": False}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/tasks/<int:task_id>", methods=["PUT"])
+def complete_task(task_id):
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("UPDATE tasks SET completed = TRUE WHERE id = %s;", (task_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"status": "updated"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/tasks/<int:task_id>", methods=["DELETE"])
+def delete_task(task_id):
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM tasks WHERE id = %s;", (task_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"status": "deleted"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
