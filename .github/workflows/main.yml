@@ -13,6 +13,12 @@ jobs:
     - name: Checkout codigo
       uses: actions/checkout@v3
 
+    - name: Instalar dependencias y ejecutar pruebas
+      run: |
+        pip install flask psycopg2-binary pytest
+        cd app
+        pytest test_main.py -v
+
     - name: Autenticar en Google Cloud
       uses: google-github-actions/auth@v2
       with:
