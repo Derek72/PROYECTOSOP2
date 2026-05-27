@@ -4,6 +4,7 @@ metadata:
   name: api-service
 spec:
   type: LoadBalancer
+  loadBalancerIP: 136.111.214.27
   selector:
     app: api
   ports:
