@@ -86,7 +86,7 @@ HTML = """
 </head>
 <body>
     <header>
-        <h1>Proyecto Final — Sistemas Operativos II</h1>
+        <h1>Proyecto Final — Sistemas Operativos II 30 de mayo</h1>
         <p>Universidad Mariano Galvez de Guatemala &nbsp;|&nbsp; Google Kubernetes Engine</p>
     </header>
     <div class="container">
