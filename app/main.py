@@ -48,7 +48,7 @@ def init_db():
         conn.close()
     except Exception as e:
         print(f"Error inicializando DB: {e}")
-
+ 
 HTML = """
 <!DOCTYPE html>
 <html>
@@ -86,7 +86,7 @@ HTML = """
 </head>
 <body>
     <header>
-        <h1>Proyecto Final — Sistemas Operativos 2</h1>
+        <h1>Proyecto Final — Sistemas Operativos II</h1>
         <p>Universidad Mariano Galvez de Guatemala &nbsp;|&nbsp; Google Kubernetes Engine</p>
     </header>
     <div class="container">
