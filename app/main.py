@@ -56,44 +56,44 @@ HTML = """
     <title>Proyecto SOP2 - UMG</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
-        header { background: #1e293b; padding: 20px 40px; border-bottom: 2px solid #3b82f6; }
-        header h1 { color: #3b82f6; font-size: 24px; }
-        header p { color: #94a3b8; font-size: 14px; }
-        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
-        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
-        .card { background: #1e293b; border-radius: 10px; padding: 24px; border: 1px solid #334155; }
-        .card h3 { color: #3b82f6; margin-bottom: 8px; font-size: 14px; text-transform: uppercase; }
-        .card p { font-size: 28px; font-weight: bold; }
-        .card .sub { font-size: 12px; color: #64748b; margin-top: 4px; }
-        .section { background: #1e293b; border-radius: 10px; padding: 24px; margin-bottom: 20px; border: 1px solid #334155; }
-        .section h2 { color: #3b82f6; margin-bottom: 16px; }
-        .badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin: 4px; }
-        .green { background: #064e3b; color: #34d399; }
-        .blue { background: #1e3a5f; color: #60a5fa; }
-        .task-row { background: #0f172a; border-radius: 6px; padding: 12px; margin: 8px 0; display: flex; align-items: center; gap: 12px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; color: #1a1a1a; }
+        header { background: white; padding: 20px 40px; border-bottom: 1px solid #e0e0e0; }
+        header h1 { font-size: 18px; font-weight: 600; color: #1a1a1a; }
+        header p { color: #888; font-size: 13px; margin-top: 4px; }
+        .container { max-width: 900px; margin: 32px auto; padding: 0 20px; }
+        .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+        .card { background: white; border-radius: 6px; padding: 20px; border: 1px solid #e0e0e0; }
+        .card h3 { font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 8px; letter-spacing: 1px; }
+        .card p { font-size: 22px; font-weight: 600; color: #1a1a1a; }
+        .card .sub { font-size: 12px; color: #bbb; margin-top: 4px; }
+        .section { background: white; border-radius: 6px; padding: 24px; margin-bottom: 16px; border: 1px solid #e0e0e0; }
+        .section h2 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: #1a1a1a; text-transform: uppercase; letter-spacing: 1px; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 12px; }
+        .green { background: #e6f4ea; color: #2d6a4f; }
+        .pending { background: #fff3e0; color: #b45309; }
+        .task-row { background: #fafafa; border-radius: 4px; padding: 12px 16px; margin: 8px 0; display: flex; align-items: center; gap: 12px; border: 1px solid #e0e0e0; font-size: 14px; }
         table { width: 100%; border-collapse: collapse; }
-        th { background: #0f172a; padding: 10px; text-align: left; color: #3b82f6; }
-        td { padding: 10px; border-bottom: 1px solid #334155; }
+        th { padding: 10px; text-align: left; color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #e0e0e0; font-weight: 500; }
+        td { padding: 12px 10px; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #1a1a1a; }
         .form-row { display: flex; gap: 10px; margin-bottom: 16px; }
-        .form-row input { flex: 1; padding: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #e2e8f0; font-size: 14px; }
-        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; }
-        .btn-add { background: #3b82f6; color: white; }
-        .btn-done { background: #064e3b; color: #34d399; padding: 4px 10px; font-size: 12px; }
-        .btn-delete { background: #7f1d1d; color: #fca5a5; padding: 4px 10px; font-size: 12px; }
-        footer { text-align: center; padding: 20px; color: #475569; font-size: 12px; }
+        .form-row input { flex: 1; padding: 10px 12px; background: #fafafa; border: 1px solid #e0e0e0; border-radius: 4px; color: #1a1a1a; font-size: 14px; outline: none; }
+        .btn { padding: 10px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 13px; font-weight: 500; }
+        .btn-add { background: #1a1a1a; color: white; }
+        .btn-done { background: #e6f4ea; color: #2d6a4f; padding: 5px 12px; font-size: 12px; }
+        .btn-delete { background: #fdecea; color: #c0392b; padding: 5px 12px; font-size: 12px; }
+        footer { text-align: center; padding: 24px; color: #bbb; font-size: 12px; }
     </style>
 </head>
 <body>
     <header>
-        <h1>🚀 Proyecto Final - Sistemas Operativos 2</h1>
-        <p>Universidad Mariano Gálvez de Guatemala &nbsp;|&nbsp; Desplegado en Google Kubernetes Engine</p>
+        <h1>Proyecto Final — Sistemas Operativos 2</h1>
+        <p>Universidad Mariano Galvez de Guatemala &nbsp;|&nbsp; Google Kubernetes Engine</p>
     </header>
     <div class="container">
         <div class="cards">
             <div class="card">
                 <h3>Estado</h3>
-                <p>✅ Online</p>
+                <p>Online</p>
                 <div class="sub">API + PostgreSQL activos</div>
             </div>
             <div class="card">
@@ -102,22 +102,22 @@ HTML = """
                 <div class="sub">cluster-sop2 | us-central1</div>
             </div>
             <div class="card">
-                <h3>Réplicas</h3>
+                <h3>Replicas</h3>
                 <p>2 Pods</p>
                 <div class="sub">HPA habilitado</div>
             </div>
         </div>
 
         <div class="section">
-            <h2>📋 Gestión de Tareas (PostgreSQL)</h2>
+            <h2>Gestion de Tareas (PostgreSQL)</h2>
             <div class="form-row">
-                <input type="text" id="newTask" placeholder="Escribe una nueva tarea..." />
-                <button class="btn btn-add" onclick="addTask()">+ Agregar</button>
+                <input type="text" id="newTask" placeholder="Nueva tarea..." />
+                <button class="btn btn-add" onclick="addTask()">Agregar</button>
             </div>
             <table>
                 <tr>
                     <th>ID</th>
-                    <th>Descripción</th>
+                    <th>Descripcion</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -126,26 +126,26 @@ HTML = """
         </div>
 
         <div class="section">
-            <h2>📦 Infraestructura GCP</h2>
+            <h2>Infraestructura GCP</h2>
             <div class="task-row">
-                <span>🔵</span><span>Clúster GKE: <strong>cluster-sop2</strong></span>
+                <span>Cluster GKE: <strong>cluster-sop2</strong></span>
                 <span class="badge green" style="margin-left:auto">Running</span>
             </div>
             <div class="task-row">
-                <span>🔵</span><span>IP Estática: <strong>136.111.214.27</strong></span>
+                <span>IP Estatica: <strong>136.111.214.27</strong></span>
                 <span class="badge green" style="margin-left:auto">Asignada</span>
             </div>
             <div class="task-row">
-                <span>🔵</span><span>Artifact Registry: <strong>proyecto-repo</strong></span>
+                <span>Artifact Registry: <strong>proyecto-repo</strong></span>
                 <span class="badge green" style="margin-left:auto">Activo</span>
             </div>
             <div class="task-row">
-                <span>🔵</span><span>CI/CD: <strong>GitHub Actions</strong></span>
+                <span>CI/CD: <strong>GitHub Actions</strong></span>
                 <span class="badge green" style="margin-left:auto">Configurado</span>
             </div>
         </div>
     </div>
-    <footer>Proyecto Final SOP2 &nbsp;|&nbsp; Universidad Mariano Gálvez 2026</footer>
+    <footer>Proyecto Final SOP2 &nbsp;|&nbsp; Universidad Mariano Galvez 2026</footer>
 
     <script>
         async function loadTasks() {
@@ -158,10 +158,10 @@ HTML = """
                     <tr>
                         <td>${t.id}</td>
                         <td>${t.description}</td>
-                        <td>${t.completed ? '<span class="badge green">✅ Completado</span>' : '<span class="badge" style="background:#7c2d12;color:#fb923c">⏳ Pendiente</span>'}</td>
-                        <td>
-                            ${!t.completed ? `<button class="btn btn-done" onclick="completeTask(${t.id})">✔ Completar</button>` : ''}
-                            <button class="btn btn-delete" onclick="deleteTask(${t.id})">🗑 Eliminar</button>
+                        <td>${t.completed ? '<span class="badge green">Completado</span>' : '<span class="badge pending">Pendiente</span>'}</td>
+                        <td style="display:flex;gap:6px;padding-top:10px">
+                            ${!t.completed ? `<button class="btn btn-done" onclick="completeTask(${t.id})">Completar</button>` : ''}
+                            <button class="btn btn-delete" onclick="deleteTask(${t.id})">Eliminar</button>
                         </td>
                     </tr>`;
             });
